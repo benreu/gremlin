@@ -1,0 +1,13 @@
+GtkEntry#left_entry {
+	border-right-width: 0px;
+  }
+GtkSourceView {
+	border-left-width: 0px;
+	border-right-width: 0px;
+	font-size: medium;
+  }
+GtkEntry#right_entry {
+    border-left-width: 0px;
+  }
+
+

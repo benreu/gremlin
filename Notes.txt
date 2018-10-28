@@ -1,0 +1,8 @@
+/usr/lib/python2.7/dist-packages/pyxie/core.py changed make to make upload
+
+#subprocess.call("avrdude -C /usr/share/arduino/hardware/tools/avrdude.conf -p atmega328p -c arduino -P /dev/ttyUSB0 -b115200 -D -U flash:w:%s:i" % hex_file , shell = True)
+#avrdude -c avrispmkII -p m32u4 -U flash:w:/home/marvin/gremlin/tmp/target.hex  #for avrISP mkII
+
+Dialog Button actions
+-3 Accept
+-6 Cancel

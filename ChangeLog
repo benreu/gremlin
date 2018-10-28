@@ -1,0 +1,47 @@
+Version 0.1 From Reuben
+
+Betas ,For my own reference only
+Version 0.11
+?
+
+Version 0.12
+?
+
+Version 0.13
+has dropdown for device and port
+
+Version 0.14
+added File > Open
+
+Version 0.15
+Added File > Save as
+some cleanup to init > gtksourceview
+
+Version 0.16
+Added File > Save
+
+Version 0.17
+Put Save into a separate def
+Clean up Code
+
+Version 0.18
+Parameter passing for right-click open as
+added default filename
+
+Version 0.19
+removed unneeded def set_buffer()
+
+Version 0.2 Sent to Reuben Only
+
+Version 0.2.1
+use ./untitled.pyxie so no longer need to put it in manually
+
+Version 0.3.0 
+Not for pyxie but for arduino.mk only
+
+Version 0.3.4
+With Reubens parser
+
+
+
+

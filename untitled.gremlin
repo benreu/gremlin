@@ -1,0 +1,48 @@
+
+const int led = 13
+
+void setup ():
+	Serial.begin(115200)
+	pinMode(led, OUTPUT)
+	while millis () < 5000:
+		Serial.println("warming up")
+		delay(10)
+
+void do_something ():
+	Serial.println (millis())
+	//if true == true:
+	//	Serial.println("true") 
+
+void do_normal ():
+	Serial.println ("everything normal")
+
+void do_error ():
+	Serial.println("high reading")
+
+void loop ():
+	digitalWrite(led, HIGH)
+	delay(1000)
+	int reading = analogRead (A1)
+	if reading == 0:
+		do_something ()
+	else if reading > 0 && reading < 100:
+		do_normal ()
+	else:
+		do_error ()
+	digitalWrite(led, LOW)
+	delay(1000)
+	for int i = 0; i<8; i++ :
+		digitalWrite(led, LOW)
+		delay(100)
+		digitalWrite(led, HIGH)
+		delay(100)
+	Serial.println(read_pot_one())
+
+int read_pot_one ():
+	int reading = analogRead(A0)
+	reading = map(reading, 0, 1023, 1023, 0)
+	return reading
+
+
+
+
