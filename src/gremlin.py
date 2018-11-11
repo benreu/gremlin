@@ -500,7 +500,6 @@ class GUI:
 		result = file_save_as.run()
 		if result == Gtk.ResponseType.ACCEPT:
 			self.filename = file_save_as.get_filename()
-			self.filename = self.filename.replace(' ', '_')
 			self.save_to_file()
 		file_save_as.hide()
 
