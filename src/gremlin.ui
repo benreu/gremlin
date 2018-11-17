@@ -292,15 +292,6 @@
                             <signal name="activate" handler="preferences_activated" swapped="no"/>
                           </object>
                         </child>
-                        <child>
-                          <object class="GtkMenuItem" id="menuitem11">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Update local folder</property>
-                            <property name="use_underline">True</property>
-                            <signal name="activate" handler="update_local_folder_activated" swapped="no"/>
-                          </object>
-                        </child>
                       </object>
                     </child>
                   </object>

@@ -191,20 +191,6 @@ class GUI:
 		import preferences
 		preferences.PreferencesGUI(self)
 
-	def update_local_folder_activated (self, menuitem):
-		config = configparser.ConfigParser()
-		config.read('./preferences.ini')
-		local = config['paths']['local']
-		remote = config['paths']['remote']
-		local_folder = os.path.expanduser(local)
-		if os.path.exists(local_folder) == False: 
-			os.mkdir(local_folder)
-		cmd = "cp -r %s/* %s\n" % (remote, local)
-		length = len(cmd)
-		self.terminal.feed_child(cmd, length)
-		self.statusbar.pop(1)
-		self.statusbar.push(1, 'Copying files to local folder...')
-
 	def serial_monitor_button_clicked (self, button):
 		if not self.com_port:
 			self.statusbar.pop(1)
