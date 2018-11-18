@@ -87,7 +87,6 @@ class GUI:
 			self.path = config['paths']['local']
 		path_string = "Arduino folder is %s" % self.path
 		self.builder.get_object('label11').set_label(path_string)
-		self.check_work_dir ()
 		self.populate_sketch_menu()
 		GLib.idle_add(self.populate_examples )
 		
