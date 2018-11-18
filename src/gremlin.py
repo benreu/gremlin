@@ -467,15 +467,18 @@ class GUI:
 		work_dir = '/tmp/inotool%s' % datetime.today()
 		self.work_dir = re.sub(" ", "_", work_dir)
 		os.mkdir(self.work_dir)
-		self.terminal.spawn_sync(
-								Vte.PtyFlags.DEFAULT,
-								self.work_dir,
-								[self.ino, "init"],
-								[],
-								GLib.SpawnFlags.DO_NOT_REAP_CHILD,
-								None,
-								None
-								)
+		try :
+			self.terminal.spawn_sync(
+									Vte.PtyFlags.DEFAULT,
+									self.work_dir,
+									[self.ino, "init"],
+									[],
+									GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+									None,
+									None
+									)
+		except Exception as e:
+			self.show_message(str(e))
 		self.statusbar.pop(1)
 		self.statusbar.push(1, 'Ino init...')
 		
