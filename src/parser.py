@@ -84,9 +84,12 @@ def create_arduino_file (textbuffer, file_):
 	stop_braces = code.count("}")
 	for i in range (start_braces - stop_braces): #fixes problem of no proper unindenting at the end
 		code += '}\n'
-	f = open(file_, 'w')
-	f.write (code)
-	f.close ()
+	try:
+		f = open(file_, 'w')
+		f.write (code)
+		f.close ()
+	except Exception as e:
+		return str(e)
 	return True
 
 def view_code (file_):
