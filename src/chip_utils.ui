@@ -275,11 +275,13 @@
                                 <property name="orientation">vertical</property>
                                 <child>
                                   <object class="GtkButton">
-                                    <property name="label" translatable="yes">Read</property>
+                                    <property name="label" translatable="yes">_Read (F2)</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
+                                    <property name="use_underline">True</property>
                                     <signal name="clicked" handler="read_chip_project_clicked" swapped="no"/>
+                                    <accelerator key="F2" signal="clicked"/>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -289,11 +291,13 @@
                                 </child>
                                 <child>
                                   <object class="GtkButton">
-                                    <property name="label" translatable="yes">Write</property>
+                                    <property name="label" translatable="yes">_Write (F3)</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
+                                    <property name="use_underline">True</property>
                                     <signal name="clicked" handler="write_chip_project_clicked" swapped="no"/>
+                                    <accelerator key="F3" signal="clicked"/>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
