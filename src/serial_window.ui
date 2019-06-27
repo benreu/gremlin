@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
   <object class="GtkTextBuffer" id="textbuffer1"/>
@@ -11,6 +11,9 @@
     <property name="default_height">600</property>
     <property name="icon">gnoduino.png</property>
     <signal name="delete-event" handler="serial_window_delete_event" swapped="no"/>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="box2">
         <property name="visible">True</property>
@@ -98,9 +101,10 @@
               <object class="GtkComboBoxText" id="comboboxtext3">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="active">1</property>
+                <property name="active">2</property>
                 <items>
                   <item id="9600" translatable="yes">9600</item>
+                  <item id="38400" translatable="yes">38400</item>
                   <item id="115200" translatable="yes">115200</item>
                 </items>
                 <signal name="changed" handler="serial_baud_rate_combo_changed" swapped="no"/>
