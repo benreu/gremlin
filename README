@@ -2,5 +2,5 @@ Dependencies for Gremlin without installing arduino (Mint 18)
 
 gcc-avr
 avrdude
-gcc-libc
+avr-libc
 python3-serial
