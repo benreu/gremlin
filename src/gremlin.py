@@ -43,9 +43,8 @@ class GUI:
 		self.builder.connect_signals(self)
 
 		style_provider = Gtk.CssProvider()
-		css = open('./custom.css', 'rb')
-		css_data = css.read()
-		css.close()
+		with open('./custom.css', 'rb') as f:
+			css_data = f.read()
 
 		style_provider.load_from_data(css_data)
 		Gtk.StyleContext.add_provider_for_screen(
@@ -82,11 +81,12 @@ class GUI:
 
 		config = configparser.ConfigParser()
 		config.read('./preferences.ini')
-		self.path = config['paths']['remote']
+		self.path = config['paths']['toolpath']
 		if not os.path.exists(self.path):
-			self.path = config['paths']['local']
+			self.show_message("Folder '%s' does not exist, \nwhich should " 
+								"contain the Arduino toolchain" % (self.path,))
 		path_string = "Arduino folder is %s" % self.path
-		self.builder.get_object('label11').set_label(path_string)
+		self.builder.get_object('toolpath_directory_label').set_label(path_string)
 		self.populate_sketch_menu()
 		GLib.idle_add(self.populate_examples )
 		
@@ -196,8 +196,7 @@ class GUI:
 			self.statusbar.push(1, 'No serial port selected!')
 			self.populate_ports ()
 			menu = self.builder.get_object('menu4')
-			menu.popup(None, None, None, None, 0, Gtk.get_current_event_time())
-			menu.show_all()
+			menu.popup_at_pointer()
 			return
 		if not self.serial_instance:
 			import serial_window
@@ -205,7 +204,8 @@ class GUI:
 		else:
 			self.serial_instance.present()
 	
-	def populate_ports (self): #ripped off from gnoduino
+	def populate_ports (self): 
+		#ripped off from gnoduino
 		menu = self.builder.get_object('menu4')
 		for i in menu.get_children():
 				menu.remove(i)
@@ -262,8 +262,7 @@ class GUI:
 			self.statusbar.push(1, 'No serial port selected!')
 			self.populate_ports ()
 			menu = self.builder.get_object('menu4')
-			menu.popup(None, None, None, None, 0, Gtk.get_current_event_time())
-			menu.show_all()
+			menu.popup_at_pointer()
 			return
 		if self.code_compiled == False:
 			self.compile_code(upload = True)
@@ -513,6 +512,8 @@ class GUI:
 		final_name = (self.filename.split('/'))[-1:][0]
 		if self.source_buffer.get_modified():
 			self.window.set_title( "*%s Gremlin" % final_name)
+		else:
+			self.window.set_title( "%s Gremlin" % final_name)
 
 	def on_key_press(self, view, event):
 		"""Check if the key press is 'Return' or 'Backspace' and indent or
@@ -523,20 +524,16 @@ class GUI:
 			# If some text is selected we want the default behavior of Return
 			# and Backspace so we do nothing
 			return
-
 		if view.get_insert_spaces_instead_of_tabs():
 			self.indent = ' ' * view.props.tab_width
 		else:
 			self.indent = '\t'
-
 		if key_name == 'Return':
 			line = self._get_current_line(self.source_buffer)
-
 			if line.endswith(':'):
 				old_indent = line[:len(line) - len(line.lstrip())]
 				self.source_buffer.insert_at_cursor('\n' + old_indent + self.indent)
 				return True
-
 			else:
 				stripped_line = line.strip()
 				n = len(line) - len(line.lstrip())
@@ -545,14 +542,11 @@ class GUI:
 				or stripped_line.startswith('continue')
 				or stripped_line.startswith('pass')):
 					n -= len(self.indent)
-
 					self.source_buffer.insert_at_cursor('\n' + line[:n])
 					self._scroll_to_cursor(self.source_buffer, view)
 					return True
-
 		if key_name == 'BackSpace':
 			line = self._get_current_line(self.source_buffer)
-
 			if line.strip() == '' and line != '':
 				length = len(self.indent)
 				nb_to_delete = len(line) % length or length
@@ -655,7 +649,6 @@ class GUI:
 				self.scan_example_directory(new_menu, entry)
 		elif object_.is_file():
 			file_name = object_.name
-			#file_name = file_name.rstrip('.gremlin')
 			menuitem = Gtk.MenuItem(label = file_name)
 			menu.add(menuitem)
 			menuitem.connect('activate', self.open_gremlin_with_file, object_.path)

@@ -15,7 +15,8 @@ dist_doc_DATA = \
 	arduino.lang \
 	run.sh \
 	untitled.gremlin \
-	AVR_fuses.xml
+	AVR_fuses.xml \
+	preferences.ini
 
 
 
