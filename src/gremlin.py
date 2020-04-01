@@ -450,6 +450,8 @@ class GUI:
 		file_open.hide()
 
 	def load_code_from_file (self):
+		if os.path.exists(self.filename):
+			self.folder_path = os.path.dirname(os.path.abspath(self.filename))
 		if self.filename.endswith('.gremlin') == True:
 			self.builder.get_object('radiobutton2').set_active(True)
 		else:

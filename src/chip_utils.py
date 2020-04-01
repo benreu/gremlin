@@ -301,6 +301,7 @@ class GUI:
 
 	def load_from_file_clicked (self, button):
 		dialog = self.builder.get_object('file_open_dialog')
+		dialog.set_current_folder (self.main.folder_path)
 		result = dialog.run()
 		dialog.hide()
 		if result != Gtk.ResponseType.ACCEPT:
