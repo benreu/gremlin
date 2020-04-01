@@ -323,10 +323,23 @@ class GUI:
 		p = Path(self.work_dir)
 		for i in p.glob(".build/**/firmware.hex"):
 			hex_file = i
+			file_save_as = Gtk.FileChooserDialog("Save hex file",
+												self.window,
+												Gtk.FileChooserAction.SAVE,
+												(Gtk.STOCK_CANCEL, 
+												Gtk.ResponseType.CANCEL,
+												Gtk.STOCK_SAVE, 
+												Gtk.ResponseType.ACCEPT))
+			file_save_as.set_current_name("untitled.hex")
+			result = file_save_as.run()
+			if result == Gtk.ResponseType.ACCEPT:
+				filename = file_save_as.get_filename()
+				with open(filename, 'wb') as f:
+					f.write(hex_file.read_bytes())
+			file_save_as.hide()
 			break
 		else:
-			raise Exception ("firmware.hex not found in .build/*/, aborting")
-		print (hex_file)
+			self.show_message ("firmware.hex not found in .build/*/, aborting")
 
 	def upload_using_programmer_activated (self, menuitem):
 		if self.code_compiled == False:
