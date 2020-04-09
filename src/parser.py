@@ -18,12 +18,16 @@
 from gi.repository import Gtk
 UI_FILE = "src/parser.ui"
 
+def get_beginning_tabs (line):
+	code = line.lstrip('\t') # strip off beginning tabs
+	tabs = (len(line) - len(code)) # number of tabs is total chars minus code
+	return tabs
+
 def create_arduino_file (textbuffer, file_):
 	start = textbuffer.get_start_iter()
 	end = textbuffer.get_end_iter()
 	text = textbuffer.get_text(start, end, True)
 	code = ''
-	tabs = 0
 	previous_tabs = 0
 	start_braces = 0
 	stop_braces = 0
@@ -33,7 +37,7 @@ def create_arduino_file (textbuffer, file_):
 		comment = line.find('//')
 		if comment == -1:
 			comment = None  #get the end of the line on uncommented lines
-		tabs = line[0:comment].count("\t")
+		tabs = get_beginning_tabs (line)
 		if tabs > indents: #check for unexpected indents
 			return ("Indentation error! please check your indentation\n"
 					"on line %s." % (line_number + 1) )
@@ -48,6 +52,9 @@ def create_arduino_file (textbuffer, file_):
 				tabs = 0
 				line = line.replace(":", "{")
 			elif line.startswith("bool "):
+				tabs = 0
+				line = line.replace(":", "{")
+			elif line.startswith("long "):
 				tabs = 0
 				line = line.replace(":", "{")
 			elif line.startswith("ISR "):
