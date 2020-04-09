@@ -73,7 +73,8 @@ class GUI:
 		self.search_grid = self.builder.get_object('grid1')
 		
 		self.terminal = Vte.Terminal()
-		self.ino = "/usr/local/lib/python2.7/dist-packages/ino-0.3.6-py2.7.egg/EGG-INFO/scripts/ino"
+		ino_dir = subprocess.check_output(["which", "ino"])
+		self.ino = ino_dir.decode("utf-8").strip('\n')
 		self.terminal.set_scroll_on_output(True)
 		self.builder.get_object('scrolledwindow2').add(self.terminal)
 		self.builder.get_object('comboboxtext1').set_active(0)
