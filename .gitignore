@@ -3,11 +3,12 @@
 /stamp-h1
 /src/Makefile
 /src/Makefile.in
-/.anjuta/default.profile
+/.anjuta
 /.anjuta_sym_db.db
 /Makefile.in
-/.ropeproject/config.py
-/.ropeproject/history
-/.ropeproject/objectdb
+/.ropeproject
 /Makefile
 /log.txt
+__pycache__
+autom4te.cache
+*~
