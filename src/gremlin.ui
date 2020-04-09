@@ -1094,7 +1094,7 @@
     <property name="type_hint">dialog</property>
     <property name="transient_for">window</property>
     <property name="program_name">Gremlin</property>
-    <property name="version">0.5.8</property>
+    <property name="version">0.5.9</property>
     <property name="comments" translatable="yes">An alternative to the Java based Arduino software, written in Python3 and Gtk3.
 Gremlin is a spinoff of Gnoduino. Gremlin has autocompletion and support for compiling sketches for the Arduino platform with an indentation syntax.
 It is planned to have a more lightweight and feature rich implementation than the alternatives so far.
