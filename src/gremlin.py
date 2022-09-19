@@ -73,23 +73,23 @@ class GUI:
 		self.search_grid = self.builder.get_object('grid1')
 		
 		self.terminal = Vte.Terminal()
-		ino_dir = subprocess.check_output(["which", "ino"])
-		self.ino = ino_dir.decode("utf-8").strip('\n')
 		self.terminal.set_scroll_on_output(True)
 		self.builder.get_object('scrolledwindow2').add(self.terminal)
 		self.builder.get_object('comboboxtext1').set_active(0)
 		self.window.show_all()
-
 		config = configparser.ConfigParser()
 		config.read('./preferences.ini')
 		self.path = config['paths']['toolpath']
 		if not os.path.exists(self.path):
 			self.show_message("Folder '%s' does not exist, \nwhich should " 
 								"contain the Arduino toolchain" % (self.path,))
+		self.exe = "/home/programmer/arduino18/arduino-cli"
 		path_string = "Arduino folder is %s" % self.path
 		self.builder.get_object('toolpath_directory_label').set_label(path_string)
 		self.populate_sketch_menu()
 		GLib.idle_add(self.populate_examples )
+		self.populate_ports()
+		
 		
 		self.passed_filename_check()
 		self.load_code_from_file()
@@ -274,7 +274,7 @@ class GUI:
 	def view_parsed_code_activated (self, button):
 		if self.builder.get_object('radiobutton1').get_active() == True:
 			return #block parsing native C syntax
-		file_location = "%s/src/sketch.ino" % self.work_dir
+		file_location = "%s/sketch/sketch.ino" % self.work_dir
 		result = parser.create_arduino_file (self.source_buffer, file_location)
 		if result != True:
 			self.show_message (result)
@@ -296,7 +296,8 @@ class GUI:
 	def ispmkii_toggled (self, checkmenuitem):
 		if checkmenuitem.get_active() == True:
 			self.builder.get_object('menuitem14').set_label('Programmer (AVRISP mkII)')
-			self.programmer = "-cstk500v2"
+			self.programmer = "avrispmkii"
+			self.chip_utils_programmer = "-cstk500v2"
 			self.protocol = "-Pusb"
 			if self.chip_utils:
 				self.chip_utils.load_main_cmd()
@@ -305,6 +306,7 @@ class GUI:
 		if checkmenuitem.get_active() == True:
 			self.builder.get_object('menuitem14').set_label('Programmer (USBtinyISP)')
 			self.programmer = "-cusbtiny"
+			self.chip_utils_programmer = "-cusbtiny"
 			self.protocol = ""
 			if self.chip_utils:
 				self.chip_utils.load_main_cmd()
@@ -322,7 +324,7 @@ class GUI:
 	def export_compiled_hex_activated (self, menuitem):
 		from pathlib import Path
 		p = Path(self.work_dir)
-		for i in p.glob(".build/**/firmware.hex"):
+		for i in p.glob("sketch/build/**/*.ino.hex"):
 			hex_file = i
 			file_save_as = Gtk.FileChooserDialog("Save hex file",
 												self.window,
@@ -340,7 +342,23 @@ class GUI:
 			file_save_as.hide()
 			break
 		else:
-			self.show_message ("firmware.hex not found in .build/*/, aborting")
+			self.show_message ("*.ino.hex not found in the folder: \n %s/sketch/build" % self.work_dir)
+
+	def burn_bootloader_activated (self, menuitem):
+			self.statusbar.pop(1)
+			self.statusbar.push(1, 'Burning Bootloader ...')
+			from pathlib import Path
+			p = Path(self.work_dir)
+			self.terminal.spawn_async(
+									Vte.PtyFlags.DEFAULT,
+									self.work_dir,
+									[self.exe, "burn-bootloader", "-b", self.board_tag, "-P", self.programmer],
+									[],
+									GLib.SpawnFlags.DEFAULT,
+									None,
+									None,
+									(-1),
+									)
 
 	def upload_using_programmer_activated (self, menuitem):
 		if self.code_compiled == False:
@@ -350,21 +368,19 @@ class GUI:
 			self.upload_using_programmer ()
 
 	def upload_using_programmer (self):
+		self.statusbar.pop(1)
+		self.statusbar.push(1, 'Upload Using Programmer ...')
 		from pathlib import Path
 		p = Path(self.work_dir)
-		for i in p.glob(".build/**/firmware.hex"):
-			hex_file = "-Uflash:w:%s:i" % i
-			break
-		else:
-			raise Exception ("firmware.hex not found in .build/*/, aborting upload")
-		self.terminal.spawn_sync(
+		self.terminal.spawn_async(
 								Vte.PtyFlags.DEFAULT,
 								self.work_dir,
-								["/usr/bin/avrdude", self.chip_tag, self.programmer, self.protocol, hex_file],
+								[self.exe, "upload", "-v", "-b", self.board_tag, "-P", self.programmer, "./sketch/sketch.ino"],
 								[],
-								GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+								GLib.SpawnFlags.DEFAULT,
 								None,
 								None,
+								(-1)
 								)
 
 	def upload (self):
@@ -372,21 +388,22 @@ class GUI:
 		self.statusbar.push(1, 'Uploading ...')
 		if self.serial_instance:
 			self.serial_instance.halt_serial_monitor ()
-		self.terminal.spawn_sync(
+		self.terminal.spawn_async(
 								Vte.PtyFlags.DEFAULT,
 								self.work_dir,
-								[self.ino, "upload", "-p", self.com_port, "-m", self.board_tag, "-d", self.path],
+								[self.exe, "upload", "-v", "-b", self.board_tag, "-p", self.com_port, "./sketch/sketch.ino"],
 								[],
-								GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+								GLib.SpawnFlags.DEFAULT,
 								None,
 								None,
+								(-1)
 								)
 		self.handler_id = self.terminal.connect("child-exited", self.upload_callback)
 	
 	def compile_code(self, upload = False, upload_using_programmer = False):
 		if self.builder.get_object('checkbutton1').get_active () == False:
 			self.file_save ()
-		file_location = "%s/src/sketch.ino" % self.work_dir
+		file_location = "%s/sketch/sketch.ino" % self.work_dir
 		if self.builder.get_object('radiobutton1').get_active() == True:
 			#compile native C
 			start = self.source_buffer.get_start_iter()
@@ -404,14 +421,15 @@ class GUI:
 		self.statusbar.pop(1)
 		self.statusbar.push(1, 'Compiling ...')
 		self.terminal.reset(True, True)
-		self.terminal.spawn_sync(
+		self.terminal.spawn_async(
 								Vte.PtyFlags.DEFAULT,
 								self.work_dir,
-								[self.ino, "build", "-m", self.board_tag, "-d", self.path],
+								[self.exe, "compile", "-b", self.board_tag, "-e", "./sketch/sketch.ino"],
 								[],
-								GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+								GLib.SpawnFlags.DEFAULT,
 								None,
 								None,
+								(-1),
 								)
 		self.handler_id = self.terminal.connect("child-exited", self.compile_callback, upload, upload_using_programmer)
 		self.code_compiled = True
@@ -429,9 +447,7 @@ class GUI:
 	def upload_callback(self, terminal, error):
 		terminal.disconnect(self.handler_id)
 		self.statusbar.pop(1)
-		text = terminal.get_text()[0]
-		if "have given up" in text or "Double check chip" in text\
-									or "attempt 10 of 10" in text:
+		if error != 0:
 			self.statusbar.push(1, 'Upload failed!')
 		else:
 			self.statusbar.push(1, 'Successful')
@@ -481,20 +497,9 @@ class GUI:
 		work_dir = '/tmp/inotool%s' % datetime.today()
 		self.work_dir = re.sub(" ", "_", work_dir)
 		os.mkdir(self.work_dir)
-		try :
-			self.terminal.spawn_sync(
-									Vte.PtyFlags.DEFAULT,
-									self.work_dir,
-									[self.ino, "init"],
-									[],
-									GLib.SpawnFlags.DO_NOT_REAP_CHILD,
-									None,
-									None
-									)
-		except Exception as e:
-			self.show_message(str(e))
+		os.mkdir("%s/sketch" % self.work_dir)							#sketch.ino needs to be in folder of the same name
 		self.statusbar.pop(1)
-		self.statusbar.push(1, 'Ino init...')
+		self.statusbar.push(1, 'Init ...')
 		
 	def file_save_as (self, menuitem = None):
 		file_save_as = self.builder.get_object('filechooserdialog2')	#File > Save As

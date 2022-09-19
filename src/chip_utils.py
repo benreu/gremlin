@@ -270,7 +270,7 @@ class GUI:
 
 	def load_main_cmd(self):
 		self.main_cmd = "/usr/bin/avrdude %s %s %s" % 	(self.main.chip_tag ,
-														self.main.programmer, 
+														self.main.chip_utils_programmer, 
 														self.main.protocol)
 
 	def destroy_window (self, window):
@@ -609,14 +609,15 @@ class GUI:
 	def run (self, cmd):
 		if self.builder.get_object('verbose_checkbutton').get_active():
 			print (cmd)
-		self.terminal.spawn_sync(
+		self.terminal.spawn_async(
 								Vte.PtyFlags.DEFAULT,
 								self.work_dir,
 								cmd.split(),
 								[],
-								GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+								GLib.SpawnFlags.DEFAULT,
 								None,
 								None,
+								-1,
 								)
 
 	def erase_chip_clicked (self, button):
