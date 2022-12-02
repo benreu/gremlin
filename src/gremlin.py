@@ -82,7 +82,7 @@ class GUI:
 		if not os.path.exists(self.path):
 			self.show_message("Folder '%s' does not exist, \nwhich should " 
 								"contain the Arduino toolchain" % (self.path,))
-		self.exe = "/home/programmer/arduino18/arduino-cli"
+		self.exe = "%s/arduino-cli" % self.path
 		path_string = "Arduino folder is %s" % self.path
 		self.builder.get_object('toolpath_directory_label').set_label(path_string)
 		self.populate_sketch_menu()
