@@ -75,7 +75,6 @@ class GUI:
 		self.terminal = Vte.Terminal()
 		self.terminal.set_scroll_on_output(True)
 		self.builder.get_object('scrolledwindow2').add(self.terminal)
-		self.builder.get_object('comboboxtext1').set_active(0)
 		self.window.show_all()
 		config = configparser.ConfigParser()
 		config.read('./preferences.ini')
@@ -89,7 +88,7 @@ class GUI:
 		self.populate_sketch_menu()
 		GLib.idle_add(self.populate_examples )
 		self.populate_ports()
-		
+		self.populate_boards()
 		
 		self.passed_filename_check()
 		self.load_code_from_file()
@@ -204,6 +203,22 @@ class GUI:
 			self.serial_instance = serial_window.SerialWindowGUI(self)
 		else:
 			self.serial_instance.present()
+
+	def populate_boards (self):
+		output = subprocess.check_output([self.exe, "board", "listall"])
+		for board in output.decode('utf8').split("\n"):
+			board = board.split("  ")
+			board = list(filter(None, board))
+			if len(board) < 2:
+				continue
+			name = board[0]
+			if name == "Board Name":
+				continue
+			identifier = board[1].strip(' ')
+			if identifier.startswith("arduino"):
+				self.builder.get_object("arduino_store").append([name, identifier])
+			else:
+				self.builder.get_object("esp32_store").append([name, identifier])
 	
 	def populate_ports (self): 
 		#ripped off from gnoduino
@@ -281,17 +296,39 @@ class GUI:
 			return
 		parser.view_code(file_location)
 		
-	def combo1_changed(self, combo):
+	def arduino_combo_changed(self, combo):
 		if self.work_dir and os.path.exists(self.work_dir):
 			shutil.rmtree(self.work_dir)
-		self.board_tag = combo.get_active_text()
-		self.chip_name = combo.get_active_id()
+		iter_ = combo.get_active_iter()
+		if iter_ == None:
+			return
+		model = combo.get_model()
+		self.chip_name = model[iter_][0]
+		self.board_tag = model[iter_][1]
 		self.chip_tag = '-p' + self.chip_name
 		if self.chip_utils:
 			self.chip_utils.window.destroy()
 			self.chip_utils = chip_utils.GUI(self)
-		self.check_work_dir() 
+		self.check_work_dir()
 		self.code_compiled = False
+		self.builder.get_object('esp32_combo').set_active(-1)
+		
+	def esp32_combo_changed(self, combo):
+		if self.work_dir and os.path.exists(self.work_dir):
+			shutil.rmtree(self.work_dir)
+		iter_ = combo.get_active_iter()
+		if iter_ == None:
+			return
+		model = combo.get_model()
+		self.chip_name = model[iter_][0]
+		self.board_tag = model[iter_][1]
+		self.chip_tag = '-p' + self.chip_name
+		if self.chip_utils:
+			self.chip_utils.window.destroy()
+			self.chip_utils = chip_utils.GUI(self)
+		self.check_work_dir()
+		self.code_compiled = False
+		self.builder.get_object('arduino_combo').set_active(-1)
 
 	def ispmkii_toggled (self, checkmenuitem):
 		if checkmenuitem.get_active() == True:

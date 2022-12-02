@@ -3,6 +3,14 @@
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <requires lib="gtksourceview" version="3.0"/>
+  <object class="GtkListStore" id="arduino_store">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name identifier -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkCheckButton" id="checkbutton1">
     <property name="label" translatable="yes">Don't ask to save for this project</property>
     <property name="visible">True</property>
@@ -10,6 +18,14 @@
     <property name="receives-default">False</property>
     <property name="xalign">0.5</property>
     <property name="draw-indicator">True</property>
+  </object>
+  <object class="GtkListStore" id="esp32_store">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name identifier -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkFileFilter" id="filefilter1">
     <patterns>
@@ -475,7 +491,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -490,7 +506,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">3</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -507,38 +523,33 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkComboBoxText" id="comboboxtext1">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <items>
-                  <item id="ATmega328P" translatable="yes">arduino:avr:uno</item>
-                  <item id="ESP32" translatable="yes">esp32:esp32:esp32</item>
-                  <item id="ATmega328P" translatable="yes">uno</item>
-                  <item id="ATmega32u4" translatable="yes">leonardo</item>
-                  <item id="ATmega32u4" translatable="yes">promicro16</item>
-                  <item id="ATmega328P" translatable="yes">328_internal</item>
-                  <item id="ATmega644P" translatable="yes">atmega644p</item>
-                  <item id="ATtiny45" translatable="yes">attiny45_1</item>
-                  <item id="ATtiny45" translatable="yes">attiny45_8</item>
-                  <item id="ATtiny45" translatable="yes">attiny45_16</item>
-                </items>
-                <signal name="changed" handler="combo1_changed" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">5</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="label7">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Board :</property>
+                <property name="label" translatable="yes">Arduino board :</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBox" id="arduino_combo">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="model">arduino_store</property>
+                <signal name="changed" handler="arduino_combo_changed" swapped="no"/>
+                <child>
+                  <object class="GtkCellRendererText"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -547,15 +558,28 @@
               </packing>
             </child>
             <child>
-              <object class="GtkMenuButton">
+              <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="focus-on-click">False</property>
-                <property name="receives-default">True</property>
-                <property name="popup">menu4</property>
-                <signal name="toggled" handler="port_menu_button_clicked" swapped="no"/>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">ESP32 board:</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBox" id="esp32_combo">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="model">esp32_store</property>
+                <signal name="changed" handler="esp32_combo_changed" swapped="no"/>
                 <child>
-                  <placeholder/>
+                  <object class="GtkCellRendererText"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
                 </child>
               </object>
               <packing>
@@ -573,7 +597,25 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">7</property>
+                <property name="position">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkMenuButton">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="focus-on-click">False</property>
+                <property name="receives-default">True</property>
+                <property name="popup">menu4</property>
+                <signal name="toggled" handler="port_menu_button_clicked" swapped="no"/>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">10</property>
               </packing>
             </child>
             <child>
@@ -586,7 +628,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">9</property>
+                <property name="position">11</property>
               </packing>
             </child>
             <child>
@@ -600,7 +642,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">10</property>
+                <property name="position">12</property>
               </packing>
             </child>
             <child>
@@ -612,7 +654,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">11</property>
+                <property name="position">13</property>
               </packing>
             </child>
             <child>
@@ -673,7 +715,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">12</property>
+                <property name="position">14</property>
               </packing>
             </child>
             <child>
@@ -693,7 +735,7 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">13</property>
+                <property name="position">15</property>
               </packing>
             </child>
           </object>
@@ -1114,7 +1156,7 @@
     <property name="type-hint">dialog</property>
     <property name="transient-for">window</property>
     <property name="program-name">Gremlin</property>
-    <property name="version">0.5.9</property>
+    <property name="version">0.6.1</property>
     <property name="comments" translatable="yes">An alternative to the Java based Arduino software, written in Python3 and Gtk3.
 Gremlin is a spinoff of Gnoduino. Gremlin has autocompletion and support for compiling sketches for the Arduino platform with an indentation syntax.
 It is planned to have a more lightweight and feature rich implementation than the alternatives so far.
