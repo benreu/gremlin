@@ -677,7 +677,8 @@ class GUI:
 					return True
 			elif response == Gtk.ResponseType.CANCEL:
 				return True #block closing the main window
-		shutil.rmtree(self.work_dir)
+		if self.work_dir and os.path.exists(self.work_dir):
+			shutil.rmtree(self.work_dir)
 		Gtk.main_quit()
 
 	def populate_examples (self):
