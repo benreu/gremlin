@@ -30,7 +30,6 @@ UI_FILE = "src/gremlin.ui"
 
 class GUI:
 	work_dir = None
-	chip_utils = None
 	terminal = None
 	com_port = None
 	serial_instance = None
@@ -306,9 +305,6 @@ class GUI:
 		self.chip_name = model[iter_][0]
 		self.board_tag = model[iter_][1]
 		self.chip_tag = '-p' + self.chip_name
-		if self.chip_utils:
-			self.chip_utils.window.destroy()
-			self.chip_utils = chip_utils.GUI(self)
 		self.check_work_dir()
 		self.code_compiled = False
 		self.builder.get_object('esp32_combo').set_active(-1)
@@ -323,9 +319,6 @@ class GUI:
 		self.chip_name = model[iter_][0]
 		self.board_tag = model[iter_][1]
 		self.chip_tag = '-p' + self.chip_name
-		if self.chip_utils:
-			self.chip_utils.window.destroy()
-			self.chip_utils = chip_utils.GUI(self)
 		self.check_work_dir()
 		self.code_compiled = False
 		self.builder.get_object('arduino_combo').set_active(-1)
@@ -336,8 +329,6 @@ class GUI:
 			self.programmer = "avrispmkii"
 			self.chip_utils_programmer = "-cstk500v2"
 			self.protocol = "-Pusb"
-			if self.chip_utils:
-				self.chip_utils.load_main_cmd()
 
 	def usbtinyisp_toggled (self, checkmenuitem):
 		if checkmenuitem.get_active() == True:
@@ -345,14 +336,9 @@ class GUI:
 			self.programmer = "-cusbtiny"
 			self.chip_utils_programmer = "-cusbtiny"
 			self.protocol = ""
-			if self.chip_utils:
-				self.chip_utils.load_main_cmd()
 
 	def chip_utils_activated (self, menuitem = None):
-		if self.chip_utils:
-			self.chip_utils.window.present()
-		else: 
-			self.chip_utils = chip_utils.GUI(self)
+		chip_utils.GUI(self)
 
 	def port_menu_button_clicked (self, menubutton):
 		if menubutton.get_active():

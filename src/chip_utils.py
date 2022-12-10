@@ -38,25 +38,51 @@ class GUI:
 
 		self.window = self.builder.get_object('window1')
 		self.window.show_all()
-		self.load_main_cmd ()
-		self.load_fuse_bit_descriptions()
-		self.load_BOD_detection(connect = True)
-		self.load_clock_selection (connect = True)
-
+		
+		self.BOD0 = None
+		self.BOD1 = None
+		self.BOD2 = None
+		self.CKSEL0 = None
+		self.CKSEL1 = None
+		self.CKSEL2 = None
+		self.CKSEL3 = None
+		self.SUT0 = None
+		self.SUT1 = None
+		self.clock_is_changing = False
+		self.chip_id = None
+		self.load_chips()
 
 
 ###########################  Clock to widgets config (unique per chip)
 
 
-
-	def load_fuse_bit_descriptions (self):
+	def load_chips (self):
+		combo = self.builder.get_object('chip_combo')
 		try:
 			tree = xml.parse("AVR_fuses.xml")
 			rootElement = tree.getroot()
 			chips = rootElement.find('AVR_Fuses')
-			for avr in chips.findall("AVR"):
-				if avr.get('caption') == self.main.chip_name:
-					for fuse in avr.findall('Fuse'):
+			for chip in chips.findall("AVR"):
+				name = chip.get('caption')
+				combo.append(name, name)
+		except Exception as e:
+			self.show_message ('Error in xml fuse parsing: %s' % e)
+
+	def chip_combo_changed (self, combo):
+		self.chip_id = combo.get_active_text()
+		self.populate_fusebit_labels()
+		self.populate_clock_selections()
+		self.populate_BOD_detection()
+		self.load_main_cmd ()
+
+	def populate_fusebit_labels(self):
+		try:
+			tree = xml.parse("AVR_fuses.xml")
+			rootElement = tree.getroot()
+			chips = rootElement.find('AVR_Fuses')
+			for chip in chips.findall("AVR"):
+				if chip.get('caption') == self.chip_id:
+					for fuse in chip.findall('Fuse'):
 						fbit = fuse.get('bit')
 						fbyte = fuse.get('fuseByte')
 						if fbyte == 'hfuse':
@@ -76,7 +102,7 @@ class GUI:
 							cb.set_active(not int(fuse.get('default')))
 					break
 			else:
-				message = "Chip %s not found in xml file!" % self.main.chip_name 
+				message = "Chip %s not found in xml file!" % self.chip_id 
 				self.show_message (message)
 				for bitnum in range(8):
 					bn=str(bitnum)
@@ -89,18 +115,16 @@ class GUI:
 		except Exception as e:
 			self.show_message ('Error in xml fuse parsing: %s' % e)
 
-	def load_clock_selection (self, widget = None, connect = False):
-		if self.clock_combo_changed == True:
-			return #feedback from the user selecting a combo setting
+	def populate_clock_selections (self):
 		clock_store = self.builder.get_object('clock_store')
 		clock_store.clear()
 		try:
 			tree = xml.parse("AVR_fuses.xml")
 			rootElement = tree.getroot()
 			chips = rootElement.find('AVR_Fuses')
-			for avr in chips.findall("AVR"):
-				if avr.get('caption') == self.main.chip_name:
-					CKlist = avr.find('ClockSelection')
+			for chip in chips.findall("AVR"):
+				if chip.get('caption') == self.chip_id:
+					CKlist = chip.find('ClockSelection')
 					widgets = CKlist.find('Widgets')
 					self.CKSEL0 = self.builder.get_object(widgets.get("CKSEL0widget"))
 					self.CKSEL1 = self.builder.get_object(widgets.get("CKSEL1widget"))
@@ -108,14 +132,6 @@ class GUI:
 					self.CKSEL3 = self.builder.get_object(widgets.get("CKSEL3widget"))
 					self.SUT0 = self.builder.get_object(widgets.get("SUT0widget"))
 					self.SUT1 = self.builder.get_object(widgets.get("SUT1widget"))
-					if connect == True:
-						self.CKSEL0.connect('toggled', self.load_clock_selection)
-						self.CKSEL1.connect('toggled', self.load_clock_selection)
-						self.CKSEL2.connect('toggled', self.load_clock_selection)
-						self.CKSEL3.connect('toggled', self.load_clock_selection)
-						self.SUT0.connect('toggled', self.load_clock_selection)
-						self.SUT1.connect('toggled', self.load_clock_selection)
-					self.populating = True
 					for CK in CKlist.findall('Setting'):
 						clock_store.append([CK.get("bin"), CK.get('caption')])
 						active = not self.CKSEL0.get_active()
@@ -137,36 +153,64 @@ class GUI:
 						if int(active) != int(CK.get('Fuse6')):
 							continue
 						self.builder.get_object("clock_combo").set_active_id(CK.get("bin"))
-					self.populating = False
 					break
 		except Exception as e:
 			self.show_message ('Error in xml clock parsing: %s' % e)
 
-	def load_BOD_detection (self, widget = None, connect = False):
+	def get_clock_setting (self):
+		try:
+			tree = xml.parse("AVR_fuses.xml")
+			rootElement = tree.getroot()
+			chips = rootElement.find('AVR_Fuses')
+			for chip in chips.findall("AVR"):
+				if chip.get('caption') == self.chip_id:
+					CKlist = chip.find('ClockSelection')
+					widgets = CKlist.find('Widgets')
+					for CK in CKlist.findall('Setting'):
+						active = not self.CKSEL0.get_active()
+						if int(active) != int(CK.get('Fuse1')):
+							continue
+						active = not self.CKSEL1.get_active()
+						if int(active) != int(CK.get('Fuse2')):
+							continue
+						active = not self.CKSEL2.get_active()
+						if int(active) != int(CK.get('Fuse3')):
+							continue
+						active = not self.CKSEL3.get_active()
+						if int(active) != int(CK.get('Fuse4')):
+							continue
+						active = not self.SUT0.get_active()
+						if int(active) != int(CK.get('Fuse5')):
+							continue
+						active = not self.SUT1.get_active()
+						if int(active) != int(CK.get('Fuse6')):
+							continue
+						self.builder.get_object("clock_combo").set_active_id(CK.get("bin"))
+					break
+		except Exception as e:
+			self.show_message ('Error in xml clock parsing: %s' % e)
+
+	def populate_BOD_detection (self):
 		level_text = 'BOD setting not found!'
 		try:
 			tree = xml.parse("AVR_fuses.xml")
 			rootElement = tree.getroot()
 			fuses=rootElement.find('AVR_Fuses')
-			for avr in fuses.findall("AVR"):
-				if avr.get('caption') == self.main.chip_name:
-					BODlist = avr.find('BrownOutDetection')
+			for chip in fuses.findall("AVR"):
+				if chip.get('caption') == self.chip_id:
+					BODlist = chip.find('BrownOutDetection')
 					widgets = BODlist.find('Widgets')
-					widget0 = self.builder.get_object(widgets.get("BOD0widget"))
-					widget1 = self.builder.get_object(widgets.get("BOD1widget"))
-					widget2 = self.builder.get_object(widgets.get("BOD2widget"))
-					if connect == True:
-						widget0.connect('toggled', self.load_BOD_detection)
-						widget1.connect('toggled', self.load_BOD_detection)
-						widget2.connect('toggled', self.load_BOD_detection)
+					self.BOD0 = self.builder.get_object(widgets.get("BOD0widget"))
+					self.BOD1 = self.builder.get_object(widgets.get("BOD1widget"))
+					self.BOD2 = self.builder.get_object(widgets.get("BOD2widget"))
 					for BOD in BODlist.findall('Setting'):
-						active = not widget0.get_active()
+						active = not self.BOD0.get_active()
 						if int(active) != int(BOD.get('Fuse1')):
 							continue
-						active = not widget1.get_active()
+						active = not self.BOD1.get_active()
 						if int(active) != int(BOD.get('Fuse2')):
 							continue
-						active = not widget2.get_active()
+						active = not self.BOD2.get_active()
 						if int(active) != int(BOD.get('Fuse3')):
 							continue
 						level_text = BOD.get('caption')
@@ -176,22 +220,52 @@ class GUI:
 		except Exception as e:
 			self.show_message ('Error in xml BOD parsing: %s' % e)
 
+	def get_BOD_setting(self):
+		level_text = 'BOD setting not found!'
+		try:
+			tree = xml.parse("AVR_fuses.xml")
+			rootElement = tree.getroot()
+			fuses=rootElement.find('AVR_Fuses')
+			for chip in fuses.findall("AVR"):
+				if chip.get('caption') == self.chip_id:
+					BODlist = chip.find('BrownOutDetection')
+					for BOD in BODlist.findall('Setting'):
+						active = not self.BOD0.get_active()
+						if int(active) != int(BOD.get('Fuse1')):
+							continue
+						active = not self.BOD1.get_active()
+						if int(active) != int(BOD.get('Fuse2')):
+							continue
+						active = not self.BOD2.get_active()
+						if int(active) != int(BOD.get('Fuse3')):
+							continue
+						level_text = BOD.get('caption')
+						break
+					break
+			self.builder.get_object("bod_detection_label").set_label(level_text)
+		except Exception as e:
+			self.show_message ('Error in xml BOD parsing: %s' % e)
+
+	def fusebits_clicked (self, widget):
+		if widget in [self.BOD0, self.BOD1, self.BOD2]:
+			self.get_BOD_setting()
+		if widget in [self.CKSEL0, self.CKSEL1, self.CKSEL2, self.CKSEL3, self.SUT0, self.SUT1]:
+			self.clock_is_changing = True
+			self.get_clock_setting()
+			self.clock_is_changing = False
+
 	def chip_clock_combo_changed (self, combo):
 		config = combo.get_active_id()
-		if self.populating == True or config == None:
+		if self.clock_is_changing == True or config == None:
 			return
-		self.clock_combo_changed = True
 		self.CKSEL3.set_active(not bool(int(config[0])))
 		self.CKSEL2.set_active(not bool(int(config[1])))
 		self.CKSEL1.set_active(not bool(int(config[2])))
 		self.CKSEL0.set_active(not bool(int(config[3])))
 		self.SUT1.set_active(not bool(int(config[4])))
 		self.SUT0.set_active(not bool(int(config[5])))
-		self.clock_combo_changed = False
 
 	def fuse_hex_checkbuttons_toggled (self, checkbutton):
-		if self.populating == True:
-			return
 		fusebyte=0
 		for bn in range(8):
 			b=self.builder.get_object("ef"+str(bn))
@@ -253,7 +327,7 @@ class GUI:
 			cb=self.builder.get_object("ef"+str(bp))
 			cb.set_active (not (int(text,16)&(1<<bp)))
 
-	def lo_fuse_entry_activated (self, entry):
+	def lock_fuse_entry_activated (self, entry):
 		try:
 			text = hex(int(entry.get_text(), 16))
 			entry.set_text(text)
@@ -269,7 +343,7 @@ class GUI:
 ########################  Project load/save and chip read/write
 
 	def load_main_cmd(self):
-		self.main_cmd = "/usr/bin/avrdude %s %s %s" % 	(self.main.chip_tag ,
+		self.main_cmd = "/usr/bin/avrdude -p %s %s %s" % 	(self.chip_id ,
 														self.main.chip_utils_programmer, 
 														self.main.protocol)
 
@@ -310,6 +384,18 @@ class GUI:
 		config = configparser.ConfigParser()
 		try:
 			config.read(self.file_name)
+		except Exception as e:
+			self.show_message(e)
+			return
+		try:
+			self.chip_id = config.get("DATA", "chip_id")
+			self.builder.get_object('chip_combo').set_active_id(self.chip_id)
+		except Exception as e:
+			print(e)
+		if self.chip_id == None:
+			self.show_message("No chip selected, and no chip data in file")
+			return
+		try:
 			flash = config.get("DATA", "flash")
 			eeprom = config.get("DATA", "eeprom")
 			low_fuse = hex(int(config.get("DATA", "low_fuse"), 16))
@@ -367,6 +453,7 @@ class GUI:
 		config.set("DATA", "high_fuse", str(high_fuse))
 		config.set("DATA", "ext_fuse", str(ext_fuse))
 		config.set("DATA", "lock_fuse", str(lock_fuse))
+		config.set("DATA", "chip_id", str(self.chip_id))
 		try:
 			with open(self.file_name, 'w') as fp:
 				config.write(fp)
