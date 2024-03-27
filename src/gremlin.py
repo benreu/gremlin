@@ -82,6 +82,7 @@ class GUI:
 			self.show_message("Folder '%s' does not exist, \nwhich should " 
 								"contain the Arduino toolchain" % (self.path,))
 		self.exe = "%s/arduino-cli" % self.path
+		subprocess.Popen( 'export ARDUINO_DIRECTORIES_DATA=%s'% self.path, shell=True )
 		path_string = "Arduino folder is %s" % self.path
 		self.builder.get_object('toolpath_directory_label').set_label(path_string)
 		self.populate_sketch_menu()
@@ -216,8 +217,6 @@ class GUI:
 			identifier = board[1].strip(' ')
 			if identifier.startswith("arduino"):
 				self.builder.get_object("arduino_store").append([name, identifier])
-			else:
-				self.builder.get_object("esp32_store").append([name, identifier])
 	
 	def populate_ports (self): 
 		#ripped off from gnoduino
@@ -307,21 +306,6 @@ class GUI:
 		self.chip_tag = '-p' + self.chip_name
 		self.check_work_dir()
 		self.code_compiled = False
-		self.builder.get_object('esp32_combo').set_active(-1)
-		
-	def esp32_combo_changed(self, combo):
-		if self.work_dir and os.path.exists(self.work_dir):
-			shutil.rmtree(self.work_dir)
-		iter_ = combo.get_active_iter()
-		if iter_ == None:
-			return
-		model = combo.get_model()
-		self.chip_name = model[iter_][0]
-		self.board_tag = model[iter_][1]
-		self.chip_tag = '-p' + self.chip_name
-		self.check_work_dir()
-		self.code_compiled = False
-		self.builder.get_object('arduino_combo').set_active(-1)
 
 	def ispmkii_toggled (self, checkmenuitem):
 		if checkmenuitem.get_active() == True:

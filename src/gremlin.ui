@@ -19,14 +19,6 @@
     <property name="xalign">0.5</property>
     <property name="draw-indicator">True</property>
   </object>
-  <object class="GtkListStore" id="esp32_store">
-    <columns>
-      <!-- column-name name -->
-      <column type="gchararray"/>
-      <!-- column-name identifier -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkFileFilter" id="filefilter1">
     <patterns>
       <pattern>*.gremlin</pattern>
@@ -558,37 +550,6 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">ESP32 board:</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">6</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkComboBox" id="esp32_combo">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="model">esp32_store</property>
-                <signal name="changed" handler="esp32_combo_changed" swapped="no"/>
-                <child>
-                  <object class="GtkCellRendererText"/>
-                  <attributes>
-                    <attribute name="text">0</attribute>
-                  </attributes>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">7</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkLabel" id="label8">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -597,7 +558,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">9</property>
+                <property name="position">7</property>
               </packing>
             </child>
             <child>
@@ -615,7 +576,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">10</property>
+                <property name="position">8</property>
               </packing>
             </child>
             <child>
@@ -628,7 +589,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">11</property>
+                <property name="position">9</property>
               </packing>
             </child>
             <child>
@@ -642,7 +603,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">12</property>
+                <property name="position">11</property>
               </packing>
             </child>
             <child>
@@ -654,7 +615,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">13</property>
+                <property name="position">11</property>
               </packing>
             </child>
             <child>
@@ -715,7 +676,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">14</property>
+                <property name="position">12</property>
               </packing>
             </child>
             <child>
@@ -735,7 +696,7 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">15</property>
+                <property name="position">13</property>
               </packing>
             </child>
           </object>
