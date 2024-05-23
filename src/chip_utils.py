@@ -28,14 +28,15 @@ class GUI:
 	
 	def __init__(self, main ):
 
-		self.work_dir = main.work_dir
-		self.terminal = main.terminal
 		self.main = main
 		
 		self.builder = Gtk.Builder()
 		self.builder.add_from_file(UI_FILE)
 		self.builder.connect_signals(self)
 
+		self.terminal = Vte.Terminal()
+		self.terminal.set_scroll_on_output(True)
+		self.builder.get_object('scrolledwindow').add(self.terminal)
 		self.window = self.builder.get_object('window1')
 		self.window.show_all()
 		
@@ -461,16 +462,17 @@ class GUI:
 			self.show_message(e)
 
 	def write_chip_project_clicked (self, button):
-		self.terminal.reset(True, True)
+		self.reset_terminal()
 		self.write_flash_to_temp_file ()
 		cmd = '%s -U flash:w:%s/flash.hex:a' % (self.main_cmd, self.work_dir)
 		self.write_eeprom_to_temp_file ()
 		cmd += ' -U eeprom:w:%s/eeprom.hex:a' % self.work_dir
 		cmd += self.get_fuses_cmd ()
 		self.run(cmd)
+		self.handler_id = self.terminal.connect("child-exited", self.write_finished)
 
 	def read_chip_project_clicked (self, button):
-		self.terminal.reset(True, True)
+		self.reset_terminal()
 		cmd = self.main_cmd + ' -U flash:r:%s/flash.hex:i' % self.work_dir
 		self.run(cmd)
 		self.handler_id = self.terminal.connect("child-exited", self.read_flash, True)
@@ -483,8 +485,7 @@ class GUI:
 	def read_flash (self, terminal, result, project = False):
 		terminal.disconnect(self.handler_id)
 		if result != 0:
-			self.show_message ("Read failed! Check output on main window.")
-			self.main.window.present()
+			self.show_message ("Read failed! Check output in terminal.")
 			return
 		with open(self.work_dir+'/flash.hex','r') as fp:
 			code = fp.read()
@@ -515,7 +516,7 @@ class GUI:
 	def verify_finished (self, terminal, result):
 		terminal.disconnect(self.handler_id)
 		if result != 0:
-			self.show_message ("Verify failed! Check output on main window.")
+			self.show_message ("Verify failed! Check output.")
 			self.main.window.present()
 		else:
 			self.show_success()
@@ -536,10 +537,10 @@ class GUI:
 		self.write_eeprom_to_temp_file ()
 		cmd = '%s -U eeprom:w:%s/eeprom.hex:a' % (self.main_cmd, self.work_dir)
 		self.run(cmd)
-		self.handler_id = self.terminal.connect("child-exited", self.write_finished)
+		self.handler_id = self.terminal.connect("child-exited", self.write_eeprom)
 
 	def read_eeprom_clicked (self, button):
-		self.terminal.reset(True, True)
+		self.reset_terminal()
 		cmd = self.main_cmd + ' -U eeprom:r:%s/eeprom.hex:i' % self.work_dir
 		self.run(cmd)
 		self.handler_id = self.terminal.connect("child-exited", self.read_eeprom)
@@ -547,7 +548,7 @@ class GUI:
 	def read_eeprom (self, terminal, result, project = False):
 		terminal.disconnect(self.handler_id)
 		if result != 0:
-			self.show_message ("Read failed! Check output on main window.")
+			self.show_message ("Read failed! Check output.")
 			self.main.window.present()
 			return
 		with open(self.work_dir+'/eeprom.hex','r') as fp:
@@ -557,7 +558,7 @@ class GUI:
 			self.read_fuses()
 
 	def verify_fuses_clicked (self, button):
-		self.terminal.reset(True, True)
+		self.reset_terminal()
 		fusebyte=0
 		for bn in range(8):
 			b=self.builder.get_object("ef"+str(bn))
@@ -580,18 +581,10 @@ class GUI:
 		fusebyte += 192 # blank bits
 		cmd += ' -U lock:v:0x%02x:m' % fusebyte
 		self.run(self.main_cmd + cmd)
-		self.handler_id = self.terminal.connect("child-exited", self.verify_fuses)
-		
-	def verify_fuses (self, terminal, result):
-		terminal.disconnect(self.handler_id)
-		if result != 0:
-			self.show_message ("Verify failed! Check output on main window.")
-			self.main.window.present()
-		else:
-			self.show_success()
+		self.handler_id = self.terminal.connect("child-exited", self.verify_finished)
 
 	def read_fuses_clicked (self, button):
-		self.terminal.reset(True, True)
+		self.reset_terminal()
 		self.read_fuses()
 
 	def read_fuses(self):
@@ -609,7 +602,7 @@ class GUI:
 	def show_fuses (self, terminal, result):
 		terminal.disconnect(self.handler_id)
 		if result != 0:
-			self.show_message ("Read failed! Check output on main window.")
+			self.show_message ("Read failed! Check output.")
 			self.main.window.present()
 			return
 		with open(self.work_dir+'/low.bin','r') as fp:
@@ -638,7 +631,7 @@ class GUI:
 				cb.set_active (not (int(lock,16)&(1<<bp)))
 
 	def write_fuses_clicked (self, button):
-		self.terminal.reset(True, True)
+		self.reset_terminal()
 		cmd = self.main_cmd + self.get_fuses_cmd()
 		self.run(cmd)
 		self.handler_id = self.terminal.connect("child-exited", self.write_finished)
@@ -670,10 +663,15 @@ class GUI:
 	def write_finished (self, terminal, result):
 		terminal.disconnect(self.handler_id)
 		if result != 0:
-			self.show_message ("Write failed! Check output on main window.")
+			self.show_message ("Write failed! Check output.")
 			self.main.window.present()
 		else:
 			self.show_success()
+
+	def reset_terminal(self):
+		self.main.check_work_dir()
+		self.work_dir = self.main.work_dir
+		self.terminal.reset(True, True)
 
 	def show_success (self):
 		dialog = Gtk.MessageDialog(self.window,
@@ -705,7 +703,13 @@ class GUI:
 								None,
 								None,
 								-1,
+								None,
+								self.run_callback
 								)
+
+	def run_callback(self, terminal, pid, error):
+		if error != None:
+			self.show_message(error.message)
 
 	def erase_chip_clicked (self, button):
 		dialog = Gtk.MessageDialog(self.window,
