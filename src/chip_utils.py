@@ -517,7 +517,6 @@ class GUI:
 		terminal.disconnect(self.handler_id)
 		if result != 0:
 			self.show_message ("Verify failed! Check output.")
-			self.main.window.present()
 		else:
 			self.show_success()
 
@@ -549,7 +548,6 @@ class GUI:
 		terminal.disconnect(self.handler_id)
 		if result != 0:
 			self.show_message ("Read failed! Check output.")
-			self.main.window.present()
 			return
 		with open(self.work_dir+'/eeprom.hex','r') as fp:
 			code = fp.read()
@@ -603,7 +601,6 @@ class GUI:
 		terminal.disconnect(self.handler_id)
 		if result != 0:
 			self.show_message ("Read failed! Check output.")
-			self.main.window.present()
 			return
 		with open(self.work_dir+'/low.bin','r') as fp:
 			lf=fp.readline()
@@ -664,7 +661,6 @@ class GUI:
 		terminal.disconnect(self.handler_id)
 		if result != 0:
 			self.show_message ("Write failed! Check output.")
-			self.main.window.present()
 		else:
 			self.show_success()
 
@@ -733,7 +729,6 @@ class GUI:
 		self.terminal.feed_child('d hfuse\n', -1)
 		self.terminal.feed_child('d efuse\n', -1)
 		self.terminal.feed_child('quit\n', -1)
-		self.main.window.present()
 
 
 
