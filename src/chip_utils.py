@@ -497,6 +497,7 @@ class GUI:
 
 	def write_flash_to_temp_file (self):
 		"write the flash in the GUI to work_dir/flash.hex"
+		self.reset_terminal()
 		code = self.get_hexcode_fom_flash_buffer ()
 		with open(self.work_dir + '/flash.hex', 'w') as fp: 
 			fp.write(code)
@@ -528,6 +529,7 @@ class GUI:
 
 	def write_eeprom_to_temp_file (self):
 		"write the flash in the GUI to work_dir/eeprom.hex"
+		self.reset_terminal()
 		code = self.get_hexcode_fom_eeprom_buffer()
 		with open(self.work_dir + '/eeprom.hex', 'w') as fp: 
 			fp.write(code)
@@ -667,6 +669,7 @@ class GUI:
 	def reset_terminal(self):
 		self.main.check_work_dir()
 		self.work_dir = self.main.work_dir
+		self.load_main_cmd()
 		self.terminal.reset(True, True)
 
 	def show_success (self):
