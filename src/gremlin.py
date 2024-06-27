@@ -97,6 +97,8 @@ class GUI:
 		self.builder.get_object('function_store').set_sort_column_id(1, sort)
 		self.builder.get_object('radiomenuitem2').set_active(True)
 
+		self.check_work_dir()
+
 	def find_entry_activated (self, entry):
 		self.search_forward()
 
@@ -297,6 +299,7 @@ class GUI:
 	def arduino_combo_changed(self, combo):
 		if self.work_dir and os.path.exists(self.work_dir):
 			shutil.rmtree(self.work_dir)
+		self.work_dir = None
 		iter_ = combo.get_active_iter()
 		if iter_ == None:
 			return
@@ -501,6 +504,8 @@ class GUI:
 			self.save_to_file()
 
 	def check_work_dir(self):
+		if self.work_dir:
+			return
 		work_dir = '/tmp/inotool%s' % datetime.today()
 		self.work_dir = re.sub(" ", "_", work_dir)
 		os.mkdir(self.work_dir)
